@@ -1,4 +1,4 @@
-createOncoMatrix = function(m, g = NULL, chatty = TRUE, add_missing = FALSE, cbio = FALSE){
+createOncoMatrix = function(m, g = NULL, chatty = TRUE, add_missing = FALSE, cbio = FALSE, addMissingSamples = TRUE){
 
   if(is.null(g)){
     stop("Please provde atleast two genes!")
@@ -6,12 +6,14 @@ createOncoMatrix = function(m, g = NULL, chatty = TRUE, add_missing = FALSE, cbi
 
   subMaf = subsetMaf(maf = m, genes = g, includeSyn = FALSE, mafObj = FALSE)
   
-  ## RTM ADDED Section 
-  missing_samples <- maf@variants.per.sample$Tumor_Sample_Barcode[! maf@variants.per.sample$Tumor_Sample_Barcode %in%  subMaf$Tumor_Sample_Barcode]
-  missing_df <- data.frame(matrix(NA, nrow = length(missing_samples), ncol = ncol(subMaf)))
-  colnames(missing_df) <- colnames(subMaf)
-  missing_df$Tumor_Sample_Barcode <- missing_samples
-  subMaf <- rbind(subMaf,missing_df)
+  ## RTM ADDED Section
+  if(addMissingSamples){
+    missing_samples <- maf@variants.per.sample$Tumor_Sample_Barcode[! maf@variants.per.sample$Tumor_Sample_Barcode %in%  subMaf$Tumor_Sample_Barcode]
+    missing_df <- data.frame(matrix(NA, nrow = length(missing_samples), ncol = ncol(subMaf)))
+    colnames(missing_df) <- colnames(subMaf)
+    missing_df$Tumor_Sample_Barcode <- missing_samples
+    subMaf <- rbind(subMaf,missing_df)
+  }
   ## END
 
   if(nrow(subMaf) == 0){
